@@ -49,7 +49,19 @@
       75% { transform: translate(-5px, -5px); }
       100% { transform: translate(5px, 5px); }
     }
-    
+  <!-- Background music -->
+  <audio id="bgMusic" loop>
+    <source src="spamton-music.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    function openDoor() {
+      const door = document.querySelector('.door');
+      const spamton = document.getElementById('spamton');
+      const spamtonImg = document.getElementById('spamtonImg');
+      const music = document.getElementById('bgMusic');
+   
 </style>
 </head>
 <body>
