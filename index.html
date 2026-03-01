@@ -59,6 +59,25 @@ button:hover {
     background: #ffff00;
     box-shadow: 0 0 15px #ffff00;
 }
+
+#siteFooter {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 9px;
+    color: #888;
+    opacity: 0.6;
+    font-family: 'Press Start 2P', cursive;
+    pointer-events: none;
+}
+    
+#siteFooter:hover {
+    color: #ffff00;
+    opacity: 1;
+    text-shadow: 0 0 6px #ffff00;
+}
+
 </style>
 </head>
 
@@ -122,9 +141,12 @@ document.addEventListener("DOMContentLoaded", function() {
     button.addEventListener("click", generateFact);
 });
 </script>
-
+<footer id="siteFooter">
+    © spamtonfacts.com — V2.1.1
+</footer>
 </body>
 </html>
+
 
 
 
