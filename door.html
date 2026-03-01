@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>???</title>
+  <style>
+    body {
+      background: black;
+      text-align: center;
+      padding-top: 100px;
+      color: white;
+      font-family: monospace;
+    }
+
+    .door {
+      width: 200px;
+      height: 350px;
+      background: #222;
+      border: 5px solid #555;
+      margin: auto;
+      position: relative;
+      cursor: pointer;
+      transition: 0.5s;
+    }
+
+    .door:hover {
+      background: #333;
+    }
+
+    .spamton {
+      display: none;
+      margin-top: 40px;
+    }
+
+    img {
+      width: 300px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>The door is locked...</h1>
+
+  <div class="door" onclick="openDoor()"></div>
+
+  <div class="spamton" id="spamton">
+    <h2>[[HEY EVERY !!]]</h2>
+    <img src="spamton.png">
+  </div>
+
+  <script>
+    function openDoor() {
+      document.querySelector('.door').style.display = 'none';
+      document.getElementById('spamton').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
