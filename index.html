@@ -1,7 +1,6 @@
-
-<head>
 <!DOCTYPE html>
 <html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>[BIG SHOT] FACT GENERATOR</title>
@@ -62,6 +61,7 @@ button:hover {
 }
 </style>
 </head>
+
 <body>
 
 <h1>[[BIG SHOT FACT GENERATOR]]</h1>
@@ -69,6 +69,9 @@ button:hover {
 <div id="factBox">CLICK ME FOR [[FORBIDDEN KNOWLEDGE]]</div>
 
 <button id="factButton">GIVE ME A [[HYPERLINK BLOCKED]] FACT</button>
+
+<!-- Sound effect -->
+<audio id="spamtonLaugh" src="spamton_laugh_noise.wav" preload="auto"></audio>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -90,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let unusedFacts = [...facts];
     const factBox = document.getElementById("factBox");
     const button = document.getElementById("factButton");
+    const laugh = document.getElementById("spamtonLaugh");
 
     function generateFact() {
         if (unusedFacts.length === 0) {
@@ -102,6 +106,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         factBox.classList.add("glitch");
 
+        // Restart sound every click
+        laugh.currentTime = 0;
+        laugh.play();
+
         setTimeout(() => {
             factBox.textContent = fact;
             factBox.classList.remove("glitch");
@@ -113,7 +121,4 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 </body>
-
 </html>
-
-
