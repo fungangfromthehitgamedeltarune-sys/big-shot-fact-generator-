@@ -1,0 +1,115 @@
+
+<head>
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[BIG SHOT] FACT GENERATOR</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+body {
+    background: black;
+    color: #ff00ff;
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+    padding-top: 80px;
+}
+
+h1 {
+    font-size: 20px;
+    color: #ffff00;
+    text-shadow: 0 0 8px #ff00ff;
+}
+
+#factBox {
+    margin: 40px auto;
+    width: 80%;
+    font-size: 13px;
+    min-height: 80px;
+    line-height: 1.6em;
+    transition: transform 0.1s;
+}
+
+.glitch {
+    animation: glitch 0.15s infinite;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 1px); }
+    40% { transform: translate(2px, -1px); }
+    60% { transform: translate(-1px, -2px); }
+    80% { transform: translate(1px, 2px); }
+    100% { transform: translate(0); }
+}
+
+button {
+    background: #ff00ff;
+    color: black;
+    border: none;
+    padding: 14px 22px;
+    font-family: 'Press Start 2P', cursive;
+    cursor: pointer;
+    font-size: 11px;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+button:hover {
+    background: #ffff00;
+    box-shadow: 0 0 15px #ffff00;
+}
+</style>
+</head>
+<body>
+
+<h1>[[BIG SHOT FACT GENERATOR]]</h1>
+
+<div id="factBox">CLICK ME FOR [[FORBIDDEN KNOWLEDGE]]</div>
+
+<button id="factButton">GIVE ME A [[HYPERLINK BLOCKED]] FACT</button>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const facts = [
+        "Deltarune was created by Tricky Tobias Foxation Radiation.",
+        "The game features a character named Kris as the (NOT) main protagonist.",
+        "Ralsei is a prince from the Dark World.",
+        "Spamton is a car dealership.",
+        "Music from Chapter 3 of Deltarune was worked on in 2012!",
+        "The song 'BIG SHOT' contains many ghost themes.",
+        "Deltarune is set in a DIFFERENT universe than Undertale. (People seem to forget this.)",
+        "The game is based off of a fever dream Tricy Tobias had.",
+        "Spamton is the best boss EVER.",
+        "Lost Girl's name in the files is Finderher.ogg."
+    ];
+
+    let unusedFacts = [...facts];
+    const factBox = document.getElementById("factBox");
+    const button = document.getElementById("factButton");
+
+    function generateFact() {
+        if (unusedFacts.length === 0) {
+            unusedFacts = [...facts];
+        }
+
+        const randomIndex = Math.floor(Math.random() * unusedFacts.length);
+        const fact = unusedFacts[randomIndex];
+        unusedFacts.splice(randomIndex, 1);
+
+        factBox.classList.add("glitch");
+
+        setTimeout(() => {
+            factBox.textContent = fact;
+            factBox.classList.remove("glitch");
+        }, 120);
+    }
+
+    button.addEventListener("click", generateFact);
+});
+</script>
+
+</body>
+</html>
