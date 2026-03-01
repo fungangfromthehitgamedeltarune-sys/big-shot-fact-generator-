@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>???</title>
   <style>
     body {
       background: black;
-      text-align: center;
-      padding-top: 100px;
       color: white;
       font-family: monospace;
+      text-align: center;
+      padding-top: 80px;
+      overflow: hidden;
     }
 
     .door {
@@ -28,30 +30,59 @@
 
     .spamton {
       display: none;
-      margin-top: 40px;
+      margin-top: 20px;
     }
 
     img {
       width: 300px;
+      transition: transform 0.2s;
     }
 
-  </style>
+    .glitch {
+      animation: glitchAnim 0.2s infinite;
+    }
+
+    @keyframes glitchAnim {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-5px, 5px); }
+      50% { transform: translate(5px, -5px); }
+      75% { transform: translate(-5px, -5px); }
+      100% { transform: translate(5px, 5px); }
+    }
+    
+</style>
 </head>
 <body>
 
   <h1>The door is locked...</h1>
-
   <div class="door" onclick="openDoor()"></div>
 
   <div class="spamton" id="spamton">
     <h2>[[HEY EVERY !!]]</h2>
-    <img src="spamton.png">
+    <img src="spamton.png" id="spamtonImg">
   </div>
 
   <script>
     function openDoor() {
-      document.querySelector('.door').style.display = 'none';
-      document.getElementById('spamton').style.display = 'block';
+      const door = document.querySelector('.door');
+      const spamton = document.getElementById('spamton');
+      const spamtonImg = document.getElementById('spamtonImg');
+
+      // Hide the door
+      door.style.display = 'none';
+      spamton.style.display = 'block';
+
+      // Add glitch effect
+      spamtonImg.classList.add('glitch');
+
+      // Play a beep immediately
+      const beep = new Audio('https://www.soundjay.com/button/sounds/beep-07.mp3');
+      beep.play();
+
+      // Redirect after 4 seconds
+      setTimeout(() => {
+        window.location.href = "/404.html";
+      }, 4000);
     }
   </script>
 
