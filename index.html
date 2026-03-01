@@ -80,7 +80,19 @@ button:hover {
 
 </style>
 </head>
+<!-- Secret door link -->
+<a href="door.html" id="secretDoor">[[Strange Door]]</a>
 
+<script>
+  // Generate a "fun value" each page load
+  const funValue = Math.floor(Math.random() * 100) + 1; // 1–100
+  console.log("Fun value for this visit:", funValue); // Optional debug
+
+  // Only show the door if funValue === 66
+  if (funValue === 66) {
+    document.getElementById("secretDoor").style.display = "inline";
+  }
+</script>
 <body>
 
 <h1>[[BIG SHOT FACT GENERATOR]]</h1>
@@ -149,6 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </footer>
 </body>
 </html>
+
 
 
 
