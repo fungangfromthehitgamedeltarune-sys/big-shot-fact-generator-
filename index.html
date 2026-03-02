@@ -82,10 +82,25 @@ button:hover {
     text-shadow: 0 0 6px #ffff00;
 }
 
+#secretDoor {
+    display: block;
+    margin-top: 30px;
+    color: #00ffff;
+    text-decoration: none;
+    font-size: 10px;
+    text-shadow: 0 0 6px #00ffff;
+    animation: flicker 1.5s infinite alternate;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
 </style>
 </head>
-<!-- Secret door link -->
-<a href="door.html" id="secretDoor">[[Strange Door]]</a>
+<!-- Secret door link (hidden by default) -->
+<a href="door.html" id="secretDoor" style="display:none;">[[Strange Door]]</a>
 
 <script>
   // Generate a "fun value" each page load
@@ -176,6 +191,60 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     button.addEventListener("click", generateFact);
+
+    // --- FUN VALUE helpers ---
+function getFunValue() {
+    const match = document.cookie.match(/(^| )FUN_VALUE=([^;]+)/);
+    return match ? parseInt(match[2]) : null;
+}
+
+// --- Show secret door only if FUN VALUE = 66 ---
+const funValue = getFunValue();
+const secretDoor = document.getElementById("secretDoor");
+
+if (funValue === 66 && secretDoor) {
+    secretDoor.style.display = "block";
+}
+
+// --- KONAMI CODE (Shift + ↑ ↑ ↓ ↓ ← → ← → A B) to show FUN VALUE ---
+let konami = [];
+const konamiPattern = [
+    "ArrowUp", "ArrowUp",
+    "ArrowDown", "ArrowDown",
+    "ArrowLeft", "ArrowRight",
+    "ArrowLeft", "ArrowRight",
+    "KeyA", "KeyB"
+];
+
+let shiftHeld = false;
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Shift") {
+        shiftHeld = true;
+        return;
+    }
+
+    if (!shiftHeld) return;
+
+    konami.push(e.code);
+
+    if (konami.length > konamiPattern.length) {
+        konami.shift();
+    }
+
+    if (konami.join(",") === konamiPattern.join(",")) {
+        alert(`FUN VALUE = ${getFunValue() ?? "???"}`);
+        konami = [];
+    }
+});
+
+document.addEventListener("keyup", (e) => {
+    if (e.key === "Shift") {
+        shiftHeld = false;
+        konami = [];
+    }
+});
+
 });
 </script>
 <footer id="siteFooter">
@@ -183,6 +252,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </footer>
 </body>
 </html>
+
 
 
 
