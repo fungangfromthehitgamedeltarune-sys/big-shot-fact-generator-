@@ -132,6 +132,19 @@ button:hover {
     padding: 8px 12px;
     font-size: 9px;
 }
+
+#meButton {
+  color: #00ffff;
+  cursor: pointer;
+  text-shadow: 0 0 6px #00ffff;
+}
+
+#meButton:hover {
+  color: yellow;
+  text-shadow: 0 0 12px yellow;
+}
+
+    
 </style>
 </head>
 
@@ -139,7 +152,7 @@ button:hover {
 
 <h1>[[BIG SHOT FACT GENERATOR]]</h1>
 
-<div id="factBox">CLICK ME FOR [[FORBIDDEN KNOWLEDGE]]</div>
+<div id="factBox">CLICK <span id="meButton">ME</span> FOR [[FORBIDDEN KNOWLEDGE]]</div>
 
 <button id="factButton">GIVE ME A [[HYPERLINK BLOCKED]] FACT</button>
 
@@ -310,7 +323,31 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 });
+
+    const meButton = document.getElementById("meButton");
+
+  meButton.addEventListener("click", () => {
+    // Random goofy effect
+    const effects = [
+      () => alert("[[HEY EVERY !!]]"),
+      () => {
+        document.body.style.transform = "rotate(1deg)";
+        setTimeout(() => document.body.style.transform = "", 150);
+      },
+      () => {
+        const s = new Audio("spamton_scare.mp3");
+        s.play();
+      },
+      () => {
+        document.body.classList.add("glitch");
+        setTimeout(() => document.body.classList.remove("glitch"), 400);
+      }
+    ];
+
+    effects[Math.floor(Math.random() * effects.length)]();
+  });
 </script>
 
 </body>
 </html>
+
