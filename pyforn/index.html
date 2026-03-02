@@ -1,67 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fuzzy/Exact Search Pyforn</title>
 <style>
-  body {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    background: #0f0f12;
-    color: #eaeaf0;
-    padding: 16px;
-  }
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0f0f12;
+  color: #eaeaf0;
+  padding: 16px;
+}
 
-  #search {
-    width: 100%;
-    max-width: 420px;
-    padding: 10px 14px;
-    margin-bottom: 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: #18181d;
-    color: white;
-    outline: none;
-    font-size: 14px;
-  }
+#controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
 
-  #tables {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-  }
+#search {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #18181d;
+  color: white;
+  outline: none;
+  font-size: 14px;
+}
 
-  .section {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  }
+#tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
 
-  .section-title {
-    padding: 10px 14px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-  }
+.section {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+.section-title {
+  padding: 10px 14px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
 
-  td {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
 
-  tr:nth-child(even) {
-    background: rgba(255,255,255,0.05);
-  }
+td {
+  padding: 8px 12px;
+  font-size: 14px;
+}
 
-  tr:hover {
-    background: rgba(255,255,255,0.1);
-  }
+tr:nth-child(even) {
+  background: rgba(255,255,255,0.05);
+}
+
+tr:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+label {
+  user-select: none;
+  font-size: 14px;
+}
 </style>
+</head>
+<body>
 
-<input id="search" placeholder="Search words or translations..." />
+<div id="controls">
+  <input id="search" placeholder="Search words or translations..." />
+  <label>
+    <input type="checkbox" id="fuzzyToggle" checked /> Fuzzy search
+  </label>
+</div>
+
 <div id="tables"></div>
 
 <script>
 const DATA_URL = "https://raw.githubusercontent.com/AdvertiserLucas/ImJustTryingToSendAFile/refs/heads/main/pyforn.json";
 
+const container = document.getElementById("tables");
+const searchInput = document.getElementById("search");
+const fuzzyToggle = document.getElementById("fuzzyToggle");
+
+let data = {};
+let lastHover = null;
+let lastJSON = "";
+
+// --- Helpers ---
 function hashString(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -75,27 +107,47 @@ function seededColor(seed) {
   return `hsl(${hue}, 65%, 65%)`;
 }
 
-const container = document.getElementById("tables");
-const searchInput = document.getElementById("search");
+// --- Fuzzy matching ---
+function levenshtein(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, () =>
+    new Array(b.length + 1).fill(0)
+  );
 
-let data = {};
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
 
-async function loadData() {
-  const res = await fetch(DATA_URL);
-  data = await res.json();
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
+    }
+  }
 
-  // re-render using current search value
-  render(searchInput.value);
+  return dp[a.length][b.length];
 }
 
-let lastHover = null;
+function fuzzyMatchScore(query, text) {
+  const q = query.toLowerCase();
+  const t = text.toLowerCase();
 
+  if (t.includes(q)) return 0; // exact substring = highest priority
+
+  if (Math.abs(t.length - q.length) > 3) return Infinity;
+
+  const distance = levenshtein(q, t);
+  const maxAllowed = Math.ceil(q.length * 0.4);
+  return distance <= maxAllowed ? distance : Infinity;
+}
+
+// --- Render ---
 function render(filter = "") {
   container.innerHTML = "";
 
   for (const [sectionName, sectionData] of Object.entries(data)) {
     const color = seededColor(sectionName);
-
     const section = document.createElement("div");
     section.className = "section";
 
@@ -105,21 +157,48 @@ function render(filter = "") {
     title.style.background = color;
     title.style.color = "#111";
 
-    const table = document.createElement("table");
-
-    let hasRows = false;
+    // Collect matching rows with score
+    const rows = [];
+    const f = filter.toLowerCase().trim();
+    const useFuzzy = fuzzyToggle.checked;
 
     for (const [key, value] of Object.entries(sectionData)) {
-      const text = (key + value).toLowerCase();
-      if (!text.includes(filter.toLowerCase())) continue;
+      let score = 0;
+      if (f) {
+        const keyLower = key.toLowerCase();
+        const valueLower = value.toLowerCase();
 
-      hasRows = true;
-      const row = table.insertRow();
-      row.insertCell().textContent = key;
-      row.insertCell().textContent = value;
+        if (keyLower.includes(f) || valueLower.includes(f)) {
+          score = 0; // exact substring
+        } else if (useFuzzy) {
+          const kScore = fuzzyMatchScore(f, keyLower);
+          const vScore = fuzzyMatchScore(f, valueLower);
+          score = Math.min(kScore, vScore);
+        } else {
+          continue;
+        }
+        if (score === Infinity) continue;
+      }
+
+      rows.push({ key, value, score });
     }
 
-    if (!hasRows) continue;
+    if (!rows.length) continue;
+
+    // Sort by score (lower = better)
+    rows.sort((a,b) => a.score - b.score);
+
+    const table = document.createElement("table");
+
+    for (const rowData of rows) {
+      const row = table.insertRow();
+      row.insertCell().textContent = rowData.key;
+      row.insertCell().textContent = rowData.value;
+
+      const id = `${sectionName}:${rowData.key}:${rowData.value}`;
+      row.addEventListener("mouseenter", () => { lastHover = id; });
+      if (lastHover === id) row.style.background = "rgba(255,255,255,0.15)";
+    }
 
     section.appendChild(title);
     section.appendChild(table);
@@ -127,9 +206,28 @@ function render(filter = "") {
   }
 }
 
-searchInput.addEventListener("input", e => {
-  render(e.target.value);
-});
-// setInterval(loadData, 2_000); 
+// --- Load JSON ---
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL);
+    const text = await res.text();
+    if (text === lastJSON) return;
+    lastJSON = text;
+    data = JSON.parse(text);
+    render(searchInput.value);
+  } catch(e) {
+    console.error("Failed to load data:", e);
+  }
+}
+
+// --- Event listeners ---
+searchInput.addEventListener("input", e => { render(e.target.value); });
+fuzzyToggle.addEventListener("change", () => { render(searchInput.value); });
+
+// --- Initial load + auto-refresh ---
 loadData();
+setInterval(loadData, 30_000);
 </script>
+
+</body>
+</html>
