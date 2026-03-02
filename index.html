@@ -97,6 +97,43 @@ button:hover {
     100% { opacity: 1; }
 }
 
+#funPanel {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#funPanelInner {
+    background: black;
+    border: 2px solid #ff00ff;
+    padding: 20px;
+    box-shadow: 0 0 20px #ff00ff;
+    color: #ffff00;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#funPanel input {
+    width: 120px;
+    padding: 6px;
+    background: black;
+    color: #00ffff;
+    border: 1px solid #00ffff;
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+}
+
+#funPanel button {
+    margin: 6px;
+    padding: 8px 12px;
+    font-size: 9px;
+}
+
+    
 </style>
 </head>
 <!-- Secret door link (hidden by default) -->
@@ -198,15 +235,50 @@ function getFunValue() {
     return match ? parseInt(match[2]) : null;
 }
 
-// --- Show secret door only if FUN VALUE = 66 ---
-const funValue = getFunValue();
-const secretDoor = document.getElementById("secretDoor");
-
-if (funValue === 66 && secretDoor) {
-    secretDoor.style.display = "block";
+function setFunValue(value) {
+    document.cookie = `FUN_VALUE=${value}; path=/; max-age=${60 * 60 * 24 * 30}`;
 }
 
-// --- KONAMI CODE (Shift + ↑ ↑ ↓ ↓ ← → ← → A B) to show FUN VALUE ---
+// --- Secret door logic ---
+function updateSecretDoor() {
+    const secretDoor = document.getElementById("secretDoor");
+    const fun = getFunValue();
+
+    if (secretDoor) {
+        secretDoor.style.display = fun === 66 ? "block" : "none";
+    }
+}
+
+// --- Debug panel ---
+const funPanel = document.getElementById("funPanel");
+const funValueDisplay = document.getElementById("funValueDisplay");
+const funValueInput = document.getElementById("funValueInput");
+const saveFunValueBtn = document.getElementById("saveFunValue");
+const closeFunPanelBtn = document.getElementById("closeFunPanel");
+
+function openFunPanel() {
+    const fun = getFunValue();
+    funValueDisplay.textContent = fun ?? "???";
+    funValueInput.value = fun ?? "";
+    funPanel.style.display = "flex";
+}
+
+function closeFunPanel() {
+    funPanel.style.display = "none";
+}
+
+saveFunValueBtn.addEventListener("click", () => {
+    const val = parseInt(funValueInput.value);
+    if (!isNaN(val) && val >= 1 && val <= 100) {
+        setFunValue(val);
+        funValueDisplay.textContent = val;
+        updateSecretDoor();
+    }
+});
+
+closeFunPanelBtn.addEventListener("click", closeFunPanel);
+
+// --- KONAMI CODE (Shift + ↑ ↑ ↓ ↓ ← → ← → A B) ---
 let konami = [];
 const konamiPattern = [
     "ArrowUp", "ArrowUp",
@@ -233,7 +305,7 @@ document.addEventListener("keydown", (e) => {
     }
 
     if (konami.join(",") === konamiPattern.join(",")) {
-        alert(`FUN VALUE = ${getFunValue() ?? "???"}`);
+        openFunPanel();
         konami = [];
     }
 });
@@ -245,13 +317,34 @@ document.addEventListener("keyup", (e) => {
     }
 });
 
+// Call once on load
+updateSecretDoor();
+
 });
 </script>
+<!-- Hidden FUN VALUE debug panel -->
+<div id="funPanel" style="display:none;">
+    <div id="funPanelInner">
+        <div style="margin-bottom: 10px;">[[DEBUG PANEL]]</div>
+        <div style="font-size: 9px; margin-bottom: 10px;">
+            FUN VALUE: <span id="funValueDisplay">??</span>
+        </div>
+
+        <input id="funValueInput" type="number" min="1" max="100" placeholder="1-100">
+
+        <div style="margin-top: 10px;">
+            <button id="saveFunValue">SAVE</button>
+            <button id="closeFunPanel">CLOSE</button>
+        </div>
+    </div>
+</div>
+
 <footer id="siteFooter">
-    © spamtonfacts.com — V2.2.0
+    © spamtonfacts.com — V2.4.1
 </footer>
 </body>
 </html>
+
 
 
 
