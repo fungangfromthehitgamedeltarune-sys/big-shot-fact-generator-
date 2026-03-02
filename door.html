@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>???</title>
+
   <style>
     body {
       background: black;
@@ -49,21 +50,9 @@
       75% { transform: translate(-5px, -5px); }
       100% { transform: translate(5px, 5px); }
     }
-  <!-- Background music -->
-  <audio id="bgMusic" loop>
-    <source src="deltarune-chapter-2-ost-22-spamton-made-with-Voicemod.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
-
-  <script>
-    function openDoor() {
-      const door = document.querySelector('.door');
-      const spamton = document.getElementById('spamton');
-      const spamtonImg = document.getElementById('spamtonImg');
-      const music = document.getElementById('bgMusic');
-   
-</style>
+  </style>
 </head>
+
 <body>
 
   <h1>The door is locked...</h1>
@@ -74,22 +63,27 @@
     <img src="spamton.png" id="spamtonImg">
   </div>
 
+  <!-- Scare sound -->
+  <audio id="scareSound" src="spamton_scare.mp3" preload="auto"></audio>
+
   <script>
     function openDoor() {
       const door = document.querySelector('.door');
       const spamton = document.getElementById('spamton');
       const spamtonImg = document.getElementById('spamtonImg');
+      const scare = document.getElementById('scareSound');
 
       // Hide the door
       door.style.display = 'none';
       spamton.style.display = 'block';
 
-      // Add glitch effect
+      // Glitch effect
       spamtonImg.classList.add('glitch');
 
-      // Play a beep immediately
-      const beep = new Audio('https://www.soundjay.com/button/sounds/beep-07.mp3');
-      beep.play();
+      // Play scare sound
+      scare.currentTime = 0;
+      scare.volume = 0.5;
+      scare.play();
 
       // Redirect after 4 seconds
       setTimeout(() => {
