@@ -75,7 +75,7 @@ button:hover {
     font-family: 'Press Start 2P', cursive;
     pointer-events: none;
 }
-    
+
 #siteFooter:hover {
     color: #ffff00;
     opacity: 1;
@@ -83,7 +83,7 @@ button:hover {
 }
 
 #secretDoor {
-    display: block;
+    display: none;
     margin-top: 30px;
     color: #00ffff;
     text-decoration: none;
@@ -101,7 +101,7 @@ button:hover {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.85);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 9999;
@@ -132,23 +132,9 @@ button:hover {
     padding: 8px 12px;
     font-size: 9px;
 }
-
-    
 </style>
 </head>
-<!-- Secret door link (hidden by default) -->
-<a href="door.html" id="secretDoor" style="display:none;">[[Strange Door]]</a>
 
-<script>
-  // Generate a "fun value" each page load
-  const funValue = Math.floor(Math.random() * 100) + 1; // 1–100
-  console.log("Fun value for this visit:", funValue); // Optional debug
-
-  // Only show the door if funValue === 66
-  if (funValue === 66) {
-    document.getElementById("secretDoor").style.display = "inline";
-  }
-</script>
 <body>
 
 <h1>[[BIG SHOT FACT GENERATOR]]</h1>
@@ -157,173 +143,12 @@ button:hover {
 
 <button id="factButton">GIVE ME A [[HYPERLINK BLOCKED]] FACT</button>
 
+<a href="door.html" id="secretDoor">[[Strange Door]]</a>
 
-<!-- Sound effect -->
 <audio id="spamtonLaugh" src="spamton_laugh_noise.mp3" preload="auto"></audio>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-
-    // --- FUN VALUE COOKIE ---
-    function setFunValue() {
-        const funValue = Math.floor(Math.random() * 100) + 1;
-
-        // Store cookie for 30 days
-        document.cookie = `FUN_VALUE=${funValue}; path=/; max-age=${60 * 60 * 24 * 30}`;
-
-        console.log("FUN VALUE set to:", funValue);
-    }
-
-    // Only run on index.html
-    const isIndex =
-        location.pathname.endsWith("/") ||
-        location.pathname.endsWith("/index.html");
-
-    if (isIndex) {
-        setFunValue();
-    }
-
-    const facts = [
-       "Spamton is better than that stupid [[CRT]].",
-        "Deltarune was created by Tricky Tobias Foxation Radiation.",
-        "The game features a character named Kris as the (NOT) main protagonist.",
-        "Ralsei is a prince from the Dark World.",
-        "Spamton is a car dealership.",
-        "Music from Chapter 3 of Deltarune was worked on in 2012!",
-        "The song 'BIG SHOT' contains many ghost themes.",
-        "Deltarune is set in a DIFFERENT universe than Undertale. (People seem to forget this.)",
-        "The game is based off of a fever dream Tricky Tobias had.",
-        "Spamton is the best boss EVER.",
-        "Lost Girl's name in the files is findher.ogg.",
-        "Deltarune does not feature random encounters."
-    ];
-    
-    let unusedFacts = [...facts];
-    const factBox = document.getElementById("factBox");
-    const button = document.getElementById("factButton");
-    const laugh = document.getElementById("spamtonLaugh");
-
-    function generateFact() {
-        if (unusedFacts.length === 0) {
-            unusedFacts = [...facts];
-        }
-
-        const randomIndex = Math.floor(Math.random() * unusedFacts.length);
-        const fact = unusedFacts[randomIndex];
-        unusedFacts.splice(randomIndex, 1);
-
-        factBox.classList.add("glitch");
-
-        // Restart sound every click
-        laugh.currentTime = 0;
-        const audio = laugh.cloneNode(true);
-        audio.volume = 0.3;
-        audio.play();
-
-
-        setTimeout(() => {
-            factBox.textContent = fact;
-            factBox.classList.remove("glitch");
-        }, 120);
-    }
-
-    button.addEventListener("click", generateFact);
-
-    // --- FUN VALUE helpers ---
-function getFunValue() {
-    const match = document.cookie.match(/(^| )FUN_VALUE=([^;]+)/);
-    return match ? parseInt(match[2]) : null;
-}
-
-function setFunValue(value) {
-    document.cookie = `FUN_VALUE=${value}; path=/; max-age=${60 * 60 * 24 * 30}`;
-}
-
-// --- Secret door logic ---
-function updateSecretDoor() {
-    const secretDoor = document.getElementById("secretDoor");
-    const fun = getFunValue();
-
-    if (secretDoor) {
-        secretDoor.style.display = fun === 66 ? "block" : "none";
-    }
-}
-
-// --- Debug panel ---
-const funPanel = document.getElementById("funPanel");
-const funValueDisplay = document.getElementById("funValueDisplay");
-const funValueInput = document.getElementById("funValueInput");
-const saveFunValueBtn = document.getElementById("saveFunValue");
-const closeFunPanelBtn = document.getElementById("closeFunPanel");
-
-function openFunPanel() {
-    const fun = getFunValue();
-    funValueDisplay.textContent = fun ?? "???";
-    funValueInput.value = fun ?? "";
-    funPanel.style.display = "flex";
-}
-
-function closeFunPanel() {
-    funPanel.style.display = "none";
-}
-
-saveFunValueBtn.addEventListener("click", () => {
-    const val = parseInt(funValueInput.value);
-    if (!isNaN(val) && val >= 1 && val <= 100) {
-        setFunValue(val);
-        funValueDisplay.textContent = val;
-        updateSecretDoor();
-    }
-});
-
-closeFunPanelBtn.addEventListener("click", closeFunPanel);
-
-// --- KONAMI CODE (Shift + ↑ ↑ ↓ ↓ ← → ← → A B) ---
-let konami = [];
-const konamiPattern = [
-    "ArrowUp", "ArrowUp",
-    "ArrowDown", "ArrowDown",
-    "ArrowLeft", "ArrowRight",
-    "ArrowLeft", "ArrowRight",
-    "KeyA", "KeyB"
-];
-
-let shiftHeld = false;
-
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Shift") {
-        shiftHeld = true;
-        return;
-    }
-
-    if (!shiftHeld) return;
-
-    konami.push(e.code);
-
-    if (konami.length > konamiPattern.length) {
-        konami.shift();
-    }
-
-    if (konami.join(",") === konamiPattern.join(",")) {
-        openFunPanel();
-        konami = [];
-    }
-});
-
-document.addEventListener("keyup", (e) => {
-    if (e.key === "Shift") {
-        shiftHeld = false;
-        konami = [];
-    }
-});
-
-// Call once on load
-updateSecretDoor();
-
-});
-</script>
 <!-- Hidden FUN VALUE debug panel -->
-<div id="funPanel" style="display:none;">
+<div id="funPanel">
     <div id="funPanelInner">
         <div style="margin-bottom: 10px;">[[DEBUG PANEL]]</div>
         <div style="font-size: 9px; margin-bottom: 10px;">
@@ -340,22 +165,152 @@ updateSecretDoor();
 </div>
 
 <footer id="siteFooter">
-    © spamtonfacts.com — V2.4.1
+    © spamtonfacts.com — V2.4.2
 </footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // --- FUN VALUE COOKIE ---
+    function rollFunValue() {
+        const funValue = Math.floor(Math.random() * 100) + 1;
+        document.cookie = `FUN_VALUE=${funValue}; path=/; max-age=${60 * 60 * 24 * 30}`;
+        console.log("FUN VALUE rolled:", funValue);
+    }
+
+    function setFunValue(value) {
+        document.cookie = `FUN_VALUE=${value}; path=/; max-age=${60 * 60 * 24 * 30}`;
+    }
+
+    function getFunValue() {
+        const match = document.cookie.match(/(^| )FUN_VALUE=([^;]+)/);
+        return match ? parseInt(match[2]) : null;
+    }
+
+    const isIndex =
+        location.pathname.endsWith("/") ||
+        location.pathname.endsWith("/index.html");
+
+    if (isIndex) {
+        rollFunValue();
+    }
+
+    // --- Secret door logic ---
+    function updateSecretDoor() {
+        const fun = getFunValue();
+        const secretDoor = document.getElementById("secretDoor");
+        secretDoor.style.display = fun === 66 ? "block" : "none";
+    }
+
+    updateSecretDoor();
+
+    // --- Fact generator ---
+    const facts = [
+        "Spamton is better than that stupid [[CRT]].",
+        "Deltarune was created by Tricky Tobias Foxation Radiation.",
+        "The game features a character named Kris as the (NOT) main protagonist.",
+        "Ralsei is a prince from the Dark World.",
+        "Spamton is a car dealership.",
+        "Music from Chapter 3 of Deltarune was worked on in 2012!",
+        "The song 'BIG SHOT' contains many ghost themes.",
+        "Deltarune is set in a DIFFERENT universe than Undertale. (People seem to forget this.)",
+        "The game is based off of a fever dream Tricky Tobias had.",
+        "Spamton is the best boss EVER.",
+        "Lost Girl's name in the files is findher.ogg.",
+        "Deltarune does not feature random encounters."
+    ];
+
+    let unusedFacts = [...facts];
+    const factBox = document.getElementById("factBox");
+    const button = document.getElementById("factButton");
+    const laugh = document.getElementById("spamtonLaugh");
+
+    function generateFact() {
+        if (unusedFacts.length === 0) unusedFacts = [...facts];
+
+        const randomIndex = Math.floor(Math.random() * unusedFacts.length);
+        const fact = unusedFacts[randomIndex];
+        unusedFacts.splice(randomIndex, 1);
+
+        factBox.classList.add("glitch");
+
+        const audio = laugh.cloneNode(true);
+        audio.volume = 0.3;
+        audio.play();
+
+        setTimeout(() => {
+            factBox.textContent = fact;
+            factBox.classList.remove("glitch");
+        }, 120);
+    }
+
+    button.addEventListener("click", generateFact);
+
+    // --- Debug panel ---
+    const funPanel = document.getElementById("funPanel");
+    const funValueDisplay = document.getElementById("funValueDisplay");
+    const funValueInput = document.getElementById("funValueInput");
+    const saveFunValueBtn = document.getElementById("saveFunValue");
+    const closeFunPanelBtn = document.getElementById("closeFunPanel");
+
+    function openFunPanel() {
+        const fun = getFunValue();
+        funValueDisplay.textContent = fun ?? "???";
+        funValueInput.value = fun ?? "";
+        funPanel.style.display = "flex";
+    }
+
+    function closeFunPanel() {
+        funPanel.style.display = "none";
+    }
+
+    saveFunValueBtn.addEventListener("click", () => {
+        const val = parseInt(funValueInput.value);
+        if (!isNaN(val) && val >= 1 && val <= 100) {
+            setFunValue(val);
+            funValueDisplay.textContent = val;
+            updateSecretDoor();
+        }
+    });
+
+    closeFunPanelBtn.addEventListener("click", closeFunPanel);
+
+    // --- KONAMI CODE (Shift + ↑ ↑ ↓ ↓ ← → ← → A B) ---
+    let konami = [];
+    const konamiPattern = [
+        "ArrowUp", "ArrowUp",
+        "ArrowDown", "ArrowDown",
+        "ArrowLeft", "ArrowRight",
+        "ArrowLeft", "ArrowRight",
+        "KeyA", "KeyB"
+    ];
+
+    let shiftHeld = false;
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Shift") {
+            shiftHeld = true;
+            return;
+        }
+        if (!shiftHeld) return;
+
+        konami.push(e.code);
+        if (konami.length > konamiPattern.length) konami.shift();
+
+        if (konami.join(",") === konamiPattern.join(",")) {
+            openFunPanel();
+            konami = [];
+        }
+    });
+
+    document.addEventListener("keyup", (e) => {
+        if (e.key === "Shift") {
+            shiftHeld = false;
+            konami = [];
+        }
+    });
+});
+</script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
