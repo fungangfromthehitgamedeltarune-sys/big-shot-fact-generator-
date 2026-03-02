@@ -112,6 +112,25 @@ button:hover {
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
+    // --- FUN VALUE COOKIE ---
+    function setFunValue() {
+        const funValue = Math.floor(Math.random() * 100) + 1;
+
+        // Store cookie for 30 days
+        document.cookie = `FUN_VALUE=${funValue}; path=/; max-age=${60 * 60 * 24 * 30}`;
+
+        console.log("FUN VALUE set to:", funValue);
+    }
+
+    // Only run on index.html
+    const isIndex =
+        location.pathname.endsWith("/") ||
+        location.pathname.endsWith("/index.html");
+
+    if (isIndex) {
+        setFunValue();
+    }
+
     const facts = [
        "Spamton is better than that stupid [[CRT]].",
         "Deltarune was created by Tricky Tobias Foxation Radiation.",
@@ -164,6 +183,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </footer>
 </body>
 </html>
+
 
 
 
