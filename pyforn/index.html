@@ -29,6 +29,31 @@ body {
   font-size: 14px;
 }
 
+#translatorBox {
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #18181d;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+#translateInput {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: #0f0f12;
+  color: white;
+}
+
+#translateOutput {
+  margin-top: 10px;
+  font-weight: 500;
+  color: #cfcfe6;
+}
+
+  
 #tables {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -80,6 +105,13 @@ label {
   </label>
 </div>
 
+<div id="translatorBox">
+  <h3>Translator</h3>
+  <input id="translateInput" placeholder="Enter Pyforn text..." />
+  <div id="translateOutput"></div>
+</div>
+
+  
 <div id="tables"></div>
 
 <script>
@@ -208,17 +240,55 @@ function render(filter = "") {
 
 // --- Load JSON ---
 async function loadData() {
-  try {
-    const res = await fetch(DATA_URL);
-    const text = await res.text();
-    if (text === lastJSON) return;
-    lastJSON = text;
-    data = JSON.parse(text);
-    render(searchInput.value);
-  } catch(e) {
-    console.error("Failed to load data:", e);
+  const res = await fetch(DATA_URL);
+  const text = await res.text();
+
+  if (text === lastJSON) return;
+
+  lastJSON = text;
+  data = JSON.parse(text);
+
+  buildReverseDictionary();
+  render(searchInput.value);
+}
+
+
+const translateInput = document.getElementById("translateInput");
+const translateOutput = document.getElementById("translateOutput");
+
+let reverseDict = {};
+
+function buildReverseDictionary() {
+  reverseDict = {};
+
+  for (const section of Object.values(data)) {
+    for (const [english, pyforn] of Object.entries(section)) {
+      const key = pyforn.toLowerCase();
+
+      if (!reverseDict[key]) reverseDict[key] = [];
+      reverseDict[key].push(english.toLowerCase());
+    }
   }
 }
+
+function translate(text) {
+  const tokens = text.toLowerCase().trim().split(/\s+/);
+  const results = [];
+
+  for (const token of tokens) {
+    if (reverseDict[token]) {
+      results.push(reverseDict[token].join("/"));
+    } else {
+      results.push("?");
+    }
+  }
+
+  return results.join(" ");
+}
+
+translateInput.addEventListener("input", () => {
+  translateOutput.textContent = translate(translateInput.value);
+});
 
 // --- Event listeners ---
 searchInput.addEventListener("input", e => { render(e.target.value); });
