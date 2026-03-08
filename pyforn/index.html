@@ -94,25 +94,109 @@ label {
   user-select: none;
   font-size: 14px;
 }
+
+#topBar{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+#fuzzyLabel{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:14px;
+  user-select:none;
+}
+
+#openTranslator{
+  padding:10px 14px;
+  border-radius:8px;
+  border:none;
+  background:#2a2a33;
+  color:white;
+  cursor:pointer;
+}
+
+
+#translatorTop{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+#translatorControls{
+  display:flex;
+  flex:1;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#translateInput{
+  flex:1;
+  max-width:500px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:#18181d;
+  color:white;
+}
+
+#directionToggle{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+#translateOutput{
+  margin-top:20px;
+  font-size:18px;
+  font-weight:500;
+}
+
 </style>
 </head>
 <body>
 
-<div id="controls">
-  <input id="search" placeholder="Search words or translations..." />
-  <label>
-    <input type="checkbox" id="fuzzyToggle" checked /> Fuzzy search
-  </label>
+<div id="dictionaryPage">
+  <div id="topBar">
+    <input id="search" placeholder="Search words or translations..." />
+
+    <label id="fuzzyLabel">
+      <input type="checkbox" id="fuzzyToggle" checked>
+      Fuzzy
+    </label>
+  
+    <button id="openTranslator">➡ Translator</button>
+  </div>
+
+
+  <div id="tables"></div>
 </div>
 
-<div id="translatorBox">
-  <h3>Translator</h3>
-  <input id="translateInput" placeholder="Enter Pyforn text..." />
+
+<div id="translatorPage" style="display:none;">
+  <div id="translatorTop">
+
+    <button id="backToDict">⬅ Dictionary</button>
+
+    <div id="translatorControls">
+      <input id="translateInput" placeholder="Enter text..." />
+      
+      <label id="directionToggle">
+        Pyforn → English
+        <input type="checkbox" id="directionSwitch">
+        English → Pyforn
+      </label>
+    </div>
+
+  </div>
+
   <div id="translateOutput"></div>
 </div>
 
-  
-<div id="tables"></div>
 
 <script>
 const DATA_URL = "https://raw.githubusercontent.com/AdvertiserLucas/ImJustTryingToSendAFile/refs/heads/main/pyforn.json";
@@ -139,6 +223,20 @@ function seededColor(seed) {
   return `hsl(${hue}, 65%, 65%)`;
 }
 
+const dictionaryPage = document.getElementById("dictionaryPage");
+const translatorPage = document.getElementById("translatorPage");
+
+document.getElementById("openTranslator").onclick = () => {
+  dictionaryPage.style.display = "none";
+  translatorPage.style.display = "block";
+};
+
+document.getElementById("backToDict").onclick = () => {
+  translatorPage.style.display = "none";
+  dictionaryPage.style.display = "block";
+};
+
+  
 // --- Fuzzy matching ---
 function levenshtein(a, b) {
   const dp = Array.from({ length: a.length + 1 }, () =>
@@ -248,48 +346,67 @@ async function loadData() {
   lastJSON = text;
   data = JSON.parse(text);
 
-  buildReverseDictionary();
+  buildDictionaries();
   render(searchInput.value);
 }
 
 
 const translateInput = document.getElementById("translateInput");
 const translateOutput = document.getElementById("translateOutput");
+const directionSwitch = document.getElementById("directionSwitch");
 
-let reverseDict = {};
+let pyfornToEnglish = {};
+let englishToPyforn = {};
 
-function buildReverseDictionary() {
-  reverseDict = {};
+function buildDictionaries(){
+  pyfornToEnglish = {};
+  englishToPyforn = {};
 
-  for (const section of Object.values(data)) {
-    for (const [english, pyforn] of Object.entries(section)) {
-      const key = pyforn.toLowerCase();
+  for(const section of Object.values(data)){
+    for(const [english, pyforn] of Object.entries(section)){
 
-      if (!reverseDict[key]) reverseDict[key] = [];
-      reverseDict[key].push(english.toLowerCase());
+      const p = pyforn.toLowerCase();
+      const e = english.toLowerCase();
+
+      if(!pyfornToEnglish[p]) pyfornToEnglish[p] = [];
+      pyfornToEnglish[p].push(e);
+
+      if(!englishToPyforn[e]) englishToPyforn[e] = [];
+      englishToPyforn[e].push(p);
     }
   }
 }
 
-function translate(text) {
+function translate(text){
+
   const tokens = text.toLowerCase().trim().split(/\s+/);
-  const results = [];
 
-  for (const token of tokens) {
-    if (reverseDict[token]) {
-      results.push(reverseDict[token].join("/"));
-    } else {
-      results.push("?");
+  const result = [];
+
+  const dict = directionSwitch.checked
+    ? englishToPyforn
+    : pyfornToEnglish;
+
+  for(const token of tokens){
+
+    if(dict[token]){
+      result.push(dict[token].join("/"));
+    }else{
+      result.push("?");
     }
+
   }
 
-  return results.join(" ");
+  return result.join(" ");
 }
 
-translateInput.addEventListener("input", () => {
+translateInput.addEventListener("input",()=>{
   translateOutput.textContent = translate(translateInput.value);
 });
 
+
+
+  
 // --- Event listeners ---
 searchInput.addEventListener("input", e => { render(e.target.value); });
 fuzzyToggle.addEventListener("change", () => { render(searchInput.value); });
@@ -297,6 +414,7 @@ fuzzyToggle.addEventListener("change", () => { render(searchInput.value); });
 // --- Initial load + auto-refresh ---
 loadData();
 setInterval(loadData, 30_000);
+
 </script>
 
 </body>
