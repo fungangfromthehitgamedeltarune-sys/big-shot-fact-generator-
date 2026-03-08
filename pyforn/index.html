@@ -472,26 +472,26 @@ function detectAffixes(word) {
   return {prefix, root, suffix, mode};
 }
 
-function translateWord(word, dict, reverse=false){
+function translateWord(word, dict, reverse=false) {
 
   const lookup = word.toLowerCase();
 
   // --- Full word match first ---
-  if(dict[lookup]){
-    return dict[lookup][0];
+  if(dict[lookup]) {
+    return dict[lookup].join("/"); // show all options
   }
 
   // --- Try affix detection ---
   const {prefix, root, suffix, mode} = detectAffixes(lookup);
 
-  if(root === lookup) return "?";
+  if(root === lookup) return "###"; // not found
 
-  let rootTranslation;
+  let rootTranslations;
 
   if(dict[root]){
-    rootTranslation = dict[root][0];
-  }else{
-    return "?";
+    rootTranslations = dict[root].join("/");
+  } else {
+    rootTranslations = "###";
   }
 
   // --- Apply affixes ---
@@ -500,28 +500,25 @@ function translateWord(word, dict, reverse=false){
     if(reverse){
       const p = Object.keys(prefixes).find(k => prefixes[k] === prefix) || "";
       const s = Object.keys(suffixes).find(k => suffixes[k] === suffix) || "";
-      return p + rootTranslation + s;
-    }else{
+      return (p || "") + rootTranslations + (s || "");
+    } else {
       const p = prefixes[prefix] || "";
       const s = suffixes[suffix] || "";
-      return p + rootTranslation + s;
+      return (p || "") + rootTranslations + (s || "");
     }
 
   }
 
   if(mode === "prefix_to_suffix"){
-    return rootTranslation + (englishPrefixPyfornSuffix[prefix] || "");
+    return rootTranslations + (englishPrefixPyfornSuffix[prefix] || "");
   }
 
   if(mode === "suffix_to_prefix"){
-    return (englishSuffixPyfornPrefix[suffix] || "") + rootTranslation;
+    return (englishSuffixPyfornPrefix[suffix] || "") + rootTranslations;
   }
 
-  return "?";
+  return "###";
 }
-
-
-
   
 function detectCase(word){
   if(word === word.toUpperCase()) return "upper";
@@ -554,8 +551,7 @@ function translate(text){
   const tokens = text.trim().split(/\s+/);
   const result = [];
 
-  const englishMode = directionSwitch.checked;
-
+  const englishMode = directionSwitch.checked; // checked = English → Pyforn
   const dict = englishMode
     ? englishToPyforn
     : pyfornToEnglish;
@@ -580,6 +576,7 @@ function translate(text){
 
   return result.join(" ");
 }
+
 
 
 
