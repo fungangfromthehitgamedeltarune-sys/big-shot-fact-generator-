@@ -377,10 +377,35 @@ function buildDictionaries(){
   }
 }
 
+function detectCase(word){
+  if(word === word.toUpperCase()) return "upper";
+  if(word[0] === word[0].toUpperCase()) return "capital";
+  return "lower";
+}
+
+function applyCase(word, style){
+  if(style === "upper") return word.toUpperCase();
+  if(style === "capital") return word.charAt(0).toUpperCase() + word.slice(1);
+  return word;
+}
+
+function splitPunctuation(token){
+  const match = token.match(/^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$/);
+  
+  if(!match){
+    return {prefix:"", word:token, suffix:""};
+  }
+
+  return {
+    prefix: match[1],
+    word: match[2],
+    suffix: match[3]
+  };
+}
+
 function translate(text){
 
-  const tokens = text.toLowerCase().trim().split(/\s+/);
-
+  const tokens = text.trim().split(/\s+/);
   const result = [];
 
   const dict = directionSwitch.checked
@@ -389,16 +414,28 @@ function translate(text){
 
   for(const token of tokens){
 
-    if(dict[token]){
-      result.push(dict[token].join("/"));
+    const {prefix, word, suffix} = splitPunctuation(token);
+
+    const caseStyle = detectCase(word);
+
+    const lookup = word.toLowerCase();
+
+    let translated;
+
+    if(dict[lookup]){
+      translated = dict[lookup].join("/");
     }else{
-      result.push("?");
+      translated = "?";
     }
 
+    translated = applyCase(translated, caseStyle);
+
+    result.push(prefix + translated + suffix);
   }
 
   return result.join(" ");
 }
+
 
 translateInput.addEventListener("input",()=>{
   translateOutput.textContent = translate(translateInput.value);
