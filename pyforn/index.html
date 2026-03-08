@@ -200,6 +200,54 @@ label {
 
 <script>
 const DATA_URL = "https://raw.githubusercontent.com/AdvertiserLucas/ImJustTryingToSendAFile/refs/heads/main/pyforn.json";
+const AFFIX_URL = "https://raw.githubusercontent.com/AdvertiserLucas/ImJustTryingToSendAFile/refs/heads/main/pyforn_affixes.json";
+
+let affixes = {};
+let prefixes = {};
+let suffixes = {};
+let englishPrefixPyfornSuffix = {};
+let englishSuffixPyfornPrefix = {};
+
+function expandAffixes(section) {
+  const result = {};
+
+  for (const key in section) {
+    const value = section[key];
+    const parts = key.split(".");
+
+    parts.forEach(p => {
+      result[p] = value;
+    });
+  }
+
+  return result;
+}
+function sortByLength(obj) {
+  return Object.keys(obj).sort((a, b) => b.length - a.length);
+}
+
+let prefixesSorted;
+let suffixesSorted;
+let epsSorted;
+let espSorted;
+
+function prepareAffixLists() {
+  prefixesSorted = sortByLength(prefixes);
+  suffixesSorted = sortByLength(suffixes);
+  epsSorted = sortByLength(englishPrefixPyfornSuffix);
+  espSorted = sortByLength(englishSuffixPyfornPrefix);
+}
+
+  
+async function loadAffixes() {
+  const res = await fetch(AFFIX_URL);
+  affixes = await res.json();
+
+  prefixes = expandAffixes(affixes["Prefixes"]);
+  suffixes = expandAffixes(affixes["Suffixes"]);
+  englishPrefixPyfornSuffix = expandAffixes(affixes["EnglishP-PyfornS"]);
+  englishSuffixPyfornPrefix = expandAffixes(affixes["EnglishS-PyfornP"]);
+}
 
 const container = document.getElementById("tables");
 const searchInput = document.getElementById("search");
@@ -345,6 +393,9 @@ async function loadData() {
 
   lastJSON = text;
   data = JSON.parse(text);
+  
+  await loadAffixes();
+  prepareAffixLists();
 
   buildDictionaries();
   render(searchInput.value);
@@ -377,6 +428,101 @@ function buildDictionaries(){
   }
 }
 
+function detectAffixes(word) {
+
+  let prefix = "";
+  let suffix = "";
+  let root = word;
+  let mode = "normal";
+
+  for (const p of prefixesSorted) {
+    if (root.startsWith(p)) {
+      prefix = p;
+      root = root.slice(p.length);
+      break;
+    }
+  }
+
+  for (const s of suffixesSorted) {
+    if (root.endsWith(s)) {
+      suffix = s;
+      root = root.slice(0, -s.length);
+      break;
+    }
+  }
+
+  for (const p of epsSorted) {
+    if (word.startsWith(p)) {
+      prefix = p;
+      root = word.slice(p.length);
+      mode = "prefix_to_suffix";
+      return {prefix, root, suffix:"", mode};
+    }
+  }
+
+  for (const s of espSorted) {
+    if (word.endsWith(s)) {
+      suffix = s;
+      root = word.slice(0, -s.length);
+      mode = "suffix_to_prefix";
+      return {prefix:"", root, suffix, mode};
+    }
+  }
+
+  return {prefix, root, suffix, mode};
+}
+
+function translateWord(word, dict, reverse=false){
+
+  const lookup = word.toLowerCase();
+
+  // --- Full word match first ---
+  if(dict[lookup]){
+    return dict[lookup][0];
+  }
+
+  // --- Try affix detection ---
+  const {prefix, root, suffix, mode} = detectAffixes(lookup);
+
+  if(root === lookup) return "?";
+
+  let rootTranslation;
+
+  if(dict[root]){
+    rootTranslation = dict[root][0];
+  }else{
+    return "?";
+  }
+
+  // --- Apply affixes ---
+  if(mode === "normal"){
+
+    if(reverse){
+      const p = Object.keys(prefixes).find(k => prefixes[k] === prefix) || "";
+      const s = Object.keys(suffixes).find(k => suffixes[k] === suffix) || "";
+      return p + rootTranslation + s;
+    }else{
+      const p = prefixes[prefix] || "";
+      const s = suffixes[suffix] || "";
+      return p + rootTranslation + s;
+    }
+
+  }
+
+  if(mode === "prefix_to_suffix"){
+    return rootTranslation + (englishPrefixPyfornSuffix[prefix] || "");
+  }
+
+  if(mode === "suffix_to_prefix"){
+    return (englishSuffixPyfornPrefix[suffix] || "") + rootTranslation;
+  }
+
+  return "?";
+}
+
+
+
+  
 function detectCase(word){
   if(word === word.toUpperCase()) return "upper";
   if(word[0] === word[0].toUpperCase()) return "capital";
@@ -408,7 +554,9 @@ function translate(text){
   const tokens = text.trim().split(/\s+/);
   const result = [];
 
-  const dict = directionSwitch.checked
+  const englishMode = directionSwitch.checked;
+
+  const dict = englishMode
     ? englishToPyforn
     : pyfornToEnglish;
 
@@ -416,17 +564,14 @@ function translate(text){
 
     const {prefix, word, suffix} = splitPunctuation(token);
 
+    if(!word){
+      result.push(token);
+      continue;
+    }
+
     const caseStyle = detectCase(word);
 
-    const lookup = word.toLowerCase();
-
-    let translated;
-
-    if(dict[lookup]){
-      translated = dict[lookup].join("/");
-    }else{
-      translated = "?";
-    }
+    let translated = translateWord(word, dict, !englishMode);
 
     translated = applyCase(translated, caseStyle);
 
@@ -435,6 +580,7 @@ function translate(text){
 
   return result.join(" ");
 }
+
 
 
 translateInput.addEventListener("input",()=>{
